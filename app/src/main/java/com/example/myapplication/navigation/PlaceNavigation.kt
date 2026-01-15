@@ -1,5 +1,3 @@
-@file:JvmName("PlaceNavigationKt")
-
 package com.example.myapplication.navigation
 
 import androidx.compose.runtime.Composable
@@ -8,6 +6,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.myapplication.screens.AddPlaceScreen
+import com.example.myapplication.screens.DetailsScreen
 import com.example.myapplication.screens.HomeScreen
 import com.example.myapplication.screens.PlaceViewModel
 
@@ -30,8 +29,12 @@ fun PlaceNavigation() {
         }
 
         // szczegóły
-        composable("details_screen/{placeId}") {
-            // TODO
+        composable(
+            route = "details_screen/{placeId}",
+            arguments = listOf(androidx.navigation.navArgument("placeId") { type = androidx.navigation.NavType.StringType })
+            ) { backStackEntry ->
+            val placeId = backStackEntry.arguments?.getString("placeId")
+            DetailsScreen(navController = navController, viewModel = placeViewModel, placeId = placeId)
         }
-    }
+        }
 }

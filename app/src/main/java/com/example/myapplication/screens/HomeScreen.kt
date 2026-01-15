@@ -42,7 +42,7 @@ fun HomeScreen(navController: NavController, viewModel: PlaceViewModel) {
                 LazyColumn(contentPadding = PaddingValues(16.dp)) {
                     items(placeList) { place ->
                         PlaceRow(place = place) { placeId ->
-                            // TODO nawigacja do szczegołów
+                            navController.navigate("details_screen/$placeId")
                         }
                     }
                 }
