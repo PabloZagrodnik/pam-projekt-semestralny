@@ -9,7 +9,7 @@ data class Place(
     val id: Int = 0,
     val title: String,
     val description: String,
-    val imageUrl: String,
+    val imageUri: String,
     val lat: Double,
     val lng: Double
 )
