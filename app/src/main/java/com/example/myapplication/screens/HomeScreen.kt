@@ -5,6 +5,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
@@ -12,10 +13,12 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.myapplication.widgets.PlaceRow
+import kotlin.math.abs
 
 @OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
@@ -68,22 +71,28 @@ fun HomeScreen(navController: NavController, viewModel: PlaceViewModel) {
                             state = dismissState,
                             enableDismissFromStartToEnd = false, // blokowanie przesuwania w prawo
                             enableDismissFromEndToStart = true, // w lewo usuwanie
-                            // tło z koszem TODO do usprawnienia
                             backgroundContent = {
-                                // gradient
-                                val alpha = if (dismissState.dismissDirection == SwipeToDismissBoxValue.EndToStart) {
-                                    dismissState.progress.coerceIn(0f, 1f)
-                                } else {
-                                    0f
-                                }
-                                val dynamicColor = Color.Red.copy(alpha = alpha)
+                                // pobranie aktualnego przesunięcia
+                                val offset = try { dismissState.requireOffset() } catch (e: Exception) { 0f }
+                                
+                                // obliczenie alpha na podstawie przesunięcia
+                                val alpha = if (offset < 0) {
+                                    (abs(offset) / 400f).coerceIn(0f, 1f)
+                                } else 0f
 
                                 Box(
                                     modifier = Modifier
                                         .fillMaxSize()
-                                        .background(dynamicColor)
+                                        .padding(vertical = 4.dp)
+                                        .background(
+                                            Brush.horizontalGradient(
+                                                colors = listOf(Color.Transparent, Color.Red.copy(alpha = alpha * 0.7f)),
+                                                startX = 300f 
+                                            ),
+                                            shape = RoundedCornerShape(16.dp) // okrągłe rogi gradientu
+                                        )
                                         .padding(horizontal = 20.dp),
-                                    contentAlignment = Alignment.CenterEnd // ikona po prawej
+                                    contentAlignment = Alignment.CenterEnd
                                 ) {
                                     Icon(
                                         imageVector = Icons.Default.Delete,

@@ -21,6 +21,7 @@ import androidx.core.content.FileProvider
 import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
 import com.google.android.gms.location.LocationServices
+import com.google.android.gms.location.Priority
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -74,10 +75,18 @@ fun AddPlaceScreen(navController: NavController, viewModel: PlaceViewModel) {
             permissions[Manifest.permission.ACCESS_COARSE_LOCATION] == true) {
 
             try {
-                fusedLocationClient.lastLocation.addOnSuccessListener { loc ->
-                    if (loc != null) location = loc
-                    else Toast.makeText(context, "Włącz GPS w telefonie!", Toast.LENGTH_SHORT).show()
-                }
+                // pobranie aktualnej lokalizacji zamiast ostatniej
+                fusedLocationClient.getCurrentLocation(Priority.PRIORITY_HIGH_ACCURACY, null)
+                    .addOnSuccessListener { loc ->
+                        if (loc != null) {
+                            location = loc
+                        } else {
+                            Toast.makeText(context, "Brak lokalizacji", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                    .addOnFailureListener {
+                        Toast.makeText(context, "Błąd pobierania lokalizacji", Toast.LENGTH_SHORT).show()
+                    }
             } catch (e: SecurityException) {
                 // niemożliwe do osiągnięcia
             }
