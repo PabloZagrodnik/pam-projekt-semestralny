@@ -5,6 +5,7 @@ import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.Update
 import com.example.myapplication.model.Place
 import kotlinx.coroutines.flow.Flow
 
@@ -23,6 +24,10 @@ interface PlaceDao {
     // Wstawianie do tabeli "places"
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertPlace(place: Place)
+
+    // Aktualizacja tabeli "places"
+    @Update
+    suspend fun updatePlace(place: Place)
 
     // Usuwanie z tabeli "places"
     @Delete

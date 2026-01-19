@@ -9,6 +9,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -53,6 +54,13 @@ fun DetailsScreen(navController: NavController, viewModel: PlaceViewModel, place
                 .verticalScroll(rememberScrollState())
         ) {
             place?.let { currentPlace ->
+
+                // przycisk edycji
+                IconButton(onClick = {
+                    navController.navigate("edit_place_screen/${currentPlace.id}")
+                }) {
+                    Icon(Icons.Default.Edit, contentDescription = "Edytuj")
+                }
                 // zdjęcie
                 Card(
                     modifier = Modifier.fillMaxWidth().height(250.dp),

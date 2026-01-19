@@ -28,6 +28,15 @@ fun PlaceNavigation() {
             AddPlaceScreen(navController = navController, viewModel = placeViewModel)
         }
 
+        // ekran edycji
+        composable(
+            route = "edit_place_screen/{placeId}",
+            arguments = listOf(androidx.navigation.navArgument("placeId") { type = androidx.navigation.NavType.StringType })
+        ) { backStackEntry ->
+            val placeId = backStackEntry.arguments?.getString("placeId")
+            com.example.myapplication.screens.EditPlaceScreen(navController = navController, viewModel = placeViewModel, placeId = placeId)
+        }
+
         // szczegóły
         composable(
             route = "details_screen/{placeId}",

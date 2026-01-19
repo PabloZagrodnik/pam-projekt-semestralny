@@ -36,6 +36,13 @@ class PlaceViewModel(application: Application) : AndroidViewModel(application) {
         return dao.getPlaceById(id)
     }
 
+    // funkcja do aktualizacji miejsca
+    fun updatePlace(place: Place) {
+        viewModelScope.launch {
+            dao.updatePlace(place)
+        }
+    }
+
     // funkcja do usuwania
     fun deletePlace(place: Place) {
         viewModelScope.launch {
