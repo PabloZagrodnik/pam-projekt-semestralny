@@ -18,11 +18,12 @@ class PlaceViewModel(application: Application) : AndroidViewModel(application) {
     val placesList: Flow<List<Place>> = dao.getAllPlaces()
 
     // funkcja dodająca wpis (w tle)
-    fun addPlace(title: String, description: String, imageUri: String, lat: Double, lng: Double) {
+    fun addPlace(title: String, description: String, address: String,imageUri: String, lat: Double, lng: Double) {
         viewModelScope.launch {
             val place = Place(
                 title = title,
                 description = description,
+                address = address,
                 imageUri = imageUri,
                 lat = lat,
                 lng = lng
