@@ -1,4 +1,4 @@
-# PAMgeo (v1.0 MVP)
+# PAMgeo (v1.1)
 Projekt semestralny realizowany w ramach przedmiotu `Programowanie Urządzeń Mobilnych`. Aplikacja
 do zapisywania miejsc wraz ze zdjęciem i lokalizacją GPS, możliwość przekierowania do `Google Maps`.
 
@@ -6,27 +6,33 @@ do zapisywania miejsc wraz ze zdjęciem i lokalizacją GPS, możliwość przekie
 
 
 ## Zrzuty Ekranu
-<img src="docs/screenshots/swipe-delete.png" width="300" alt="Animacja usuwania przez przesunięcie"/> <img src="docs/screenshots/details-screen.png" width="300" alt="Widok szczegółów miejsca"/>
+<p align="center">
+  <img src="docs/screenshots/swipe-delete.png" width="250" alt="Lista">
+  <img src="docs/screenshots/sort-options.png" width="250" alt="Dodawanie">
+</p>
 
+<p align="center">
+  <img src="docs/screenshots/details-screen.png" width="250" alt="Szczegóły">
+  <img src="docs/screenshots/share.png" width="250" alt="Edycja">
+</p>
 
 ## Status projektu
 Projekt został zainicjowany w oparciu o kod z Laboratorium 11 (struktura MVVM, Navigation Compose).
 ### Dodane funkcjonalności:
-* **Create, Read, Delete** - Możliwość tworzenia, wyświetlania i usuwania miejsc
+* **Create, Read, Update, Delete** - Możliwość tworzenia, wyświetlania, edycji i usuwania miejsc
 * **Obsługa Aparatu** - Wykonywanie zdjęć i wyświetlanie miniatur `(Camera Intent, FileProvider)`
 * **Lokalizacja GPS** - Pobieranie aktualnych współrzędnych geograficznych `(lat, lng)`
+* **Geocoding** - zmiana współrzędnych na adres.
 * **Baza Danych** - Zapis do lokalnej bazy danych `(Room Database)`
+* **Wyszukiwanie i Filtrowanie** - Wyszukiwanie miejsc po tytule i sortowanie.
 * **Swipe-Delete** - Usuwanie elementu listy przez przesunięcie palcem wraz z animacją `(gradient)`
 * **Google Maps** - Przekierowanie do `Google Maps` w widoku szczegółów `DetailsScreen`
+* **Eksport danych** - Możliwość udostępniania miejsc do innych aplikacji `(Wiadomości, Poczta, Notatki)`.
 
 
 ## TODO
 ### Lista planowanych funkcji:
-* [ ] **Edycja wpisów (Update)** - Możliwość zmiany tytułu, opisu lub zdjęcia w istniejącej notatce `(CRUD)`.
-* [ ] **Geocoding** - Zamiana współrzędnych na adres.
-* [ ] **Wyszukiwanie i Filtrowanie** - Wyszukiwanie notatek po tytule i sortowanie.
-* [ ] **Eksport danych** - Możliwość udostępniania notatki do innych aplikacji `(?)`.
-
+* **Ewentualna poprawa UI**
 
 ## Tech Stack
 * **Język** - Kotlin
