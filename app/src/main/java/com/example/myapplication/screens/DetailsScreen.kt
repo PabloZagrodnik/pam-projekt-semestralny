@@ -15,6 +15,7 @@ import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -48,24 +49,16 @@ fun DetailsScreen(navController: NavController, viewModel: PlaceViewModel, place
                     IconButton(onClick = { navController.popBackStack() }) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, "Wróć")
                     }
-                }
-            )
-        }
-    ) { padding ->
-        Column(
-            modifier = Modifier
-                .padding(padding)
-                .padding(16.dp)
-                .verticalScroll(rememberScrollState())
-        ) {
-            place?.let { currentPlace ->
-
-                // przycisk edycji
-                IconButton(onClick = {
-                    navController.navigate("edit_place_screen/${currentPlace.id}")
-                }) {
-                    Icon(Icons.Default.Edit, contentDescription = "Edytuj")
-                }
+                },
+                // przyciski edycji i udostępniania
+                actions = {
+                    place?.let { currentPlace ->
+                        // przycisk edycji
+                        IconButton(onClick = {
+                            navController.navigate("edit_place_screen/${currentPlace.id}")
+                        }) {
+                            Icon(Icons.Default.Edit, contentDescription = "Edytuj")
+                        }
 
                 // przycisk udostępniania
                 IconButton(onClick = {
@@ -141,9 +134,21 @@ fun DetailsScreen(navController: NavController, viewModel: PlaceViewModel, place
                         shareTextOnly()
                     }
 
-                }) {
-                    Icon(Icons.Default.Share, contentDescription = "Udostępnij")
+                    }) {
+                        Icon(Icons.Default.Share, contentDescription = "Udostępnij")
+                    }
+                    }
                 }
+            )
+        }
+    ) { padding ->
+        Column(
+            modifier = Modifier
+                .padding(padding)
+                .padding(16.dp)
+                .verticalScroll(rememberScrollState())
+        ) {
+            place?.let { currentPlace ->
 
                 // zdjęcie
                 Card(
@@ -163,6 +168,25 @@ fun DetailsScreen(navController: NavController, viewModel: PlaceViewModel, place
 
                 // tytuł
                 Text(text = currentPlace.title, style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
+
+                // adres (jeśli istnieje)
+                if (currentPlace.address.isNotEmpty()) {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            Icons.Default.LocationOn,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.secondary,
+                            modifier = Modifier.size(20.dp)
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            text = currentPlace.address,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.secondary
+                        )
+                    }
+                }
 
                 Spacer(modifier = Modifier.height(8.dp))
 

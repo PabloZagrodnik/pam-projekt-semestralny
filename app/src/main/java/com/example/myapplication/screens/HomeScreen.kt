@@ -8,7 +8,10 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.List
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -24,16 +27,104 @@ import kotlin.math.abs
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun HomeScreen(navController: NavController, viewModel: PlaceViewModel) {
-    // lista miejsc - sama się odświeża
-    val placeList by viewModel.placesList.collectAsState(initial = emptyList())
+    // obserwowanie stanów z ViewModelu
+    val placeList by viewModel.placesList.collectAsState()
+    val searchQuery by viewModel.searchQuery.collectAsState()
+    val sortOption by viewModel.sortOption.collectAsState()
 
-    // szkielet ekranu
+    // stan dla menu sortowania
+    var isSortMenuExpanded by remember { mutableStateOf(false) }
+
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text("PAMgeo") },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.primaryContainer)
-            )
+            // search bar
+            Column(
+                modifier = Modifier
+                    .background(MaterialTheme.colorScheme.primaryContainer)
+                    .padding(16.dp)
+            ) {
+                // wiersz zawierający pole wyszukiwania i przycisk sortowania
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    // pole wyszukiwania
+                    OutlinedTextField(
+                        value = searchQuery,
+                        onValueChange = { viewModel.onSearchQueryChanged(it) },
+                        placeholder = { Text("Szukaj") },
+                        leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
+                        trailingIcon = {
+                            if (searchQuery.isNotEmpty()) {
+                                IconButton(onClick = { viewModel.onSearchQueryChanged("") }) {
+                                    Icon(Icons.Default.Clear, contentDescription = "Wyczyść")
+                                }
+                            }
+                        },
+                        modifier = Modifier.weight(1f), // zajmuje dostępną przestrzeń
+                        singleLine = true,
+                        shape = RoundedCornerShape(24.dp), // zaokrąglony kształt
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedContainerColor = MaterialTheme.colorScheme.surface,
+                            unfocusedContainerColor = MaterialTheme.colorScheme.surface
+                        )
+                    )
+
+                    // przycisk Sortowania z Menu
+                    Box {
+                        IconButton(
+                            onClick = { isSortMenuExpanded = true },
+                            modifier = Modifier.background(MaterialTheme.colorScheme.surface, shape = RoundedCornerShape(12.dp))
+                        ) {
+                            Icon(Icons.Default.List, contentDescription = "Sortuj")
+                        }
+
+                        DropdownMenu(
+                            expanded = isSortMenuExpanded,
+                            onDismissRequest = { isSortMenuExpanded = false }
+                        ) {
+                            DropdownMenuItem(
+                                text = { Text("Najnowsze") },
+                                onClick = {
+                                    viewModel.onSortOptionChanged(SortOption.NEWEST)
+                                    isSortMenuExpanded = false
+                                },
+                                leadingIcon = {
+                                    // zaznaczenie aktualnej opcji
+                                    if (sortOption == SortOption.NEWEST) {
+                                        Text("✓", style = MaterialTheme.typography.titleMedium)
+                                    }
+                                }
+                            )
+                            DropdownMenuItem(
+                                text = { Text("Najstarsze") },
+                                onClick = {
+                                    viewModel.onSortOptionChanged(SortOption.OLDEST)
+                                    isSortMenuExpanded = false
+                                },
+                                leadingIcon = {
+                                    if (sortOption == SortOption.OLDEST) {
+                                        Text("✓", style = MaterialTheme.typography.titleMedium)
+                                    }
+                                }
+                            )
+                            DropdownMenuItem(
+                                text = { Text("Alfabetycznie (A-Z)") },
+                                onClick = {
+                                    viewModel.onSortOptionChanged(SortOption.ALPHABETICAL)
+                                    isSortMenuExpanded = false
+                                },
+                                leadingIcon = {
+                                    if (sortOption == SortOption.ALPHABETICAL) {
+                                        Text("✓", style = MaterialTheme.typography.titleMedium)
+                                    }
+                                }
+                            )
+                        }
+                    }
+                }
+            }
         },
         floatingActionButton = {
             // + do ekranu dodawania
@@ -43,10 +134,13 @@ fun HomeScreen(navController: NavController, viewModel: PlaceViewModel) {
         }
     ) { innerPadding ->
         Column(modifier = Modifier.padding(innerPadding)) {
-            // obsługa pustej listy
             if (placeList.isEmpty()) {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text("Brak miejsc. Kliknij + aby dodać!")
+                    if (searchQuery.isNotEmpty()) {
+                        Text("Nie znaleziono miejsc pasujących do zapytania.")
+                    } else {
+                        Text("Brak miejsc. Kliknij + aby dodać")
+                    }
                 }
             } else {
                 // lista
