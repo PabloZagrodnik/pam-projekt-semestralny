@@ -1,6 +1,7 @@
 package com.example.myapplication.screens
 
 import android.Manifest
+import android.location.Geocoder
 import android.location.Location
 import android.net.Uri
 import android.os.Environment
@@ -11,6 +12,8 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -22,6 +25,9 @@ import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -30,20 +36,23 @@ import java.util.Locale
 @Composable
 fun AddPlaceScreen(navController: NavController, viewModel: PlaceViewModel) {
     val context = LocalContext.current
+    val scope = rememberCoroutineScope()
 
     // stan formularza
     var title by remember { mutableStateOf("")}
     var description by remember { mutableStateOf("")}
+    var address by remember { mutableStateOf("") } // adres z geocoding
     var imageUri by remember { mutableStateOf<Uri?>(null)}
     // tymczasowe uri przekazywane do aparatu
     var tempUri by remember { mutableStateOf<Uri?>(null)}
     var location by remember { mutableStateOf<Location?>(null)}
+    val fusedLocationClient = remember { LocationServices.getFusedLocationProviderClient(context) }
 
     // kamera (tworzenie pliku)
     fun createImageFile(): File {
         val timeStamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
         val storageDir = context.getExternalFilesDir(Environment.DIRECTORY_PICTURES)
-        return File.createTempFile("JPEG${timeStamp}_", ".jpg", storageDir)
+        return File.createTempFile("JPEG_${timeStamp}_", ".jpg", storageDir)
     }
 
     // launcher aparatu
@@ -66,30 +75,96 @@ fun AddPlaceScreen(navController: NavController, viewModel: PlaceViewModel) {
             Toast.makeText(context, "Brak zgody na użycie aparatu", Toast.LENGTH_SHORT).show()
     }
 
-    // logika lokalizacji
-    val fusedLocationClient = remember { LocationServices.getFusedLocationProviderClient(context) }
-
-    val locationPermissionLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) {
-        permissions ->
-        if (permissions[Manifest.permission.ACCESS_FINE_LOCATION] == true ||
-            permissions[Manifest.permission.ACCESS_COARSE_LOCATION] == true) {
-
+    // geocoding
+    fun getAddressFromLocation(lat: Double, lng: Double) {
+        scope.launch(Dispatchers.IO) {
             try {
-                // pobranie aktualnej lokalizacji zamiast ostatniej
-                fusedLocationClient.getCurrentLocation(Priority.PRIORITY_HIGH_ACCURACY, null)
-                    .addOnSuccessListener { loc ->
-                        if (loc != null) {
-                            location = loc
-                        } else {
-                            Toast.makeText(context, "Brak lokalizacji", Toast.LENGTH_SHORT).show()
+                val geocoder = Geocoder(context, Locale.getDefault())
+
+                fun buildAddress(addr: android.location.Address): String {
+                    val street = addr.thoroughfare ?: ""
+                    val number = addr.subThoroughfare ?: ""
+                    val city = addr.locality ?: ""
+
+                    return listOf("$street $number".trim(), city)
+                        .filter { it.isNotBlank() }
+                        .joinToString(", ")
+                        .ifEmpty { "Nieznany adres" }
+                }
+
+                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+                    geocoder.getFromLocation(lat, lng, 1) { addresses ->
+                        val result = if (!addresses.isNullOrEmpty())
+                            buildAddress(addresses[0])
+                        else
+                            "Nie znaleziono adresu"
+
+                        scope.launch {
+                            address = result
+                            Toast.makeText(context, "Pobrano adres", Toast.LENGTH_SHORT).show()
                         }
                     }
-                    .addOnFailureListener {
-                        Toast.makeText(context, "Błąd pobierania lokalizacji", Toast.LENGTH_SHORT).show()
+                } else {
+                    @Suppress("DEPRECATION")
+                    val addresses = geocoder.getFromLocation(lat, lng, 1)
+
+                    val result = if (!addresses.isNullOrEmpty())
+                        buildAddress(addresses[0])
+                    else
+                        "Nie znaleziono adresu"
+
+                    withContext(Dispatchers.Main) {
+                        address = result
+                        Toast.makeText(context, "Pobrano adres", Toast.LENGTH_SHORT).show()
                     }
-            } catch (e: SecurityException) {
-                // niemożliwe do osiągnięcia
+                }
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(context, "Błąd pobierania adresu", Toast.LENGTH_SHORT).show()
+                }
             }
+        }
+    }
+
+
+    // lokalizacja
+    val locationPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestMultiplePermissions()
+    ) { permissions ->
+        val fineLocation = permissions[Manifest.permission.ACCESS_FINE_LOCATION] == true
+        val coarseLocation = permissions[Manifest.permission.ACCESS_COARSE_LOCATION] == true
+
+        if (fineLocation || coarseLocation) {
+            try {
+                // pobieranie lokalizacji
+                fusedLocationClient.lastLocation.addOnSuccessListener { lastLoc ->
+                    if (lastLoc != null) {
+                        location = lastLoc
+                        getAddressFromLocation(lastLoc.latitude, lastLoc.longitude)
+                        Toast.makeText(context, "Pobrano ostatnią lokalizację", Toast.LENGTH_SHORT).show()
+                    } else {
+                        fusedLocationClient.getCurrentLocation(Priority.PRIORITY_BALANCED_POWER_ACCURACY, null)
+                            .addOnSuccessListener { currentLoc ->
+                                if (currentLoc != null) {
+                                    location = currentLoc
+                                    getAddressFromLocation(currentLoc.latitude, currentLoc.longitude)
+                                } else {
+                                    Toast.makeText(context, "Włącz Mapy Google, aby odświeżyć lokalizację", Toast.LENGTH_LONG).show()
+                                }
+                            }
+                    }
+                }.addOnFailureListener {
+                    fusedLocationClient.getCurrentLocation(Priority.PRIORITY_BALANCED_POWER_ACCURACY, null)
+                        .addOnSuccessListener { loc ->
+                            location = loc
+                            if (loc != null) getAddressFromLocation(loc.latitude, loc.longitude)
+                        }
+                }
+            } catch (e: SecurityException) {
+                Toast.makeText(context, "Błąd uprawnień", Toast.LENGTH_SHORT).show()
+            }
+        } else {
+            Toast.makeText(context, "Brak uprawnień GPS", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -119,7 +194,16 @@ fun AddPlaceScreen(navController: NavController, viewModel: PlaceViewModel) {
             minLines = 3
         )
 
-        // zdjęcia
+        // adres - wypełniane automatyczne ale można edytować
+        OutlinedTextField(
+            value = address,
+            onValueChange = { address = it },
+            label = { Text("Adres (z GPS)") },
+            modifier = Modifier.fillMaxWidth(),
+            trailingIcon = { Icon(Icons.Default.LocationOn, contentDescription = null) },
+            placeholder = { Text("Pobierz lokalizację aby wypełnić") }
+        )
+
         Button(onClick = { permissionLauncher.launch(Manifest.permission.CAMERA) }) {
             Text("Zrób Zdjęcie")
         }
@@ -148,8 +232,15 @@ fun AddPlaceScreen(navController: NavController, viewModel: PlaceViewModel) {
         Button(
             onClick = {
                 if (title.isNotEmpty() && imageUri != null && location != null) {
-                    viewModel.addPlace(title, description, imageUri.toString(), location!!.latitude, location!!.longitude)
-                    navController.popBackStack() // Wraca do listy po zapisaniu
+                    viewModel.addPlace(
+                        title,
+                        description,
+                        address, // przekazywanie adresu
+                        imageUri.toString(),
+                        location!!.latitude,
+                        location!!.longitude
+                    )
+                    navController.popBackStack()
                 } else {
                     Toast.makeText(context, "Uzupełnij nazwę, zdjęcie i GPS!", Toast.LENGTH_SHORT).show()
                 }
@@ -160,5 +251,4 @@ fun AddPlaceScreen(navController: NavController, viewModel: PlaceViewModel) {
             Text("ZAPISZ")
         }
     }
-
 }

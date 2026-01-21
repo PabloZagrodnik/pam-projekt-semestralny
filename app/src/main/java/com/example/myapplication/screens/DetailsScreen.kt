@@ -72,7 +72,7 @@ fun DetailsScreen(navController: NavController, viewModel: PlaceViewModel, place
                     val shareText = """
                         Zobacz to miejsce: ${currentPlace.title}
                         Opis: ${currentPlace.description}
-                        📍 Lokalizacja: http://googleusercontent.com/maps.google.com/?q=${currentPlace.lat},${currentPlace.lng}
+                        Lokalizacja: https://www.google.com/maps/search/?api=1&query=${currentPlace.lat},${currentPlace.lng}
                     """.trimIndent()
 
                     fun shareTextOnly() {
