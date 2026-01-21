@@ -7,13 +7,13 @@ do zapisywania miejsc wraz ze zdjęciem i lokalizacją GPS, możliwość przekie
 
 ## Zrzuty Ekranu
 <p align="center">
-  <img src="docs/screenshots/swipe-delete.png" width="250" alt="Lista">
-  <img src="docs/screenshots/sort-options.png" width="250" alt="Dodawanie">
+  <img src="docs/screenshots/swipe-delete.png" width="250" alt="Lista z usuwaniem elementów przez przesunięcie">
+  <img src="docs/screenshots/sort-options.png" width="250" alt="Opcje sortowania">
 </p>
 
 <p align="center">
   <img src="docs/screenshots/details-screen.png" width="250" alt="Szczegóły">
-  <img src="docs/screenshots/share.png" width="250" alt="Edycja">
+  <img src="docs/screenshots/share.png" width="250" alt="Udostępnianie miejsca">
 </p>
 
 ## Status projektu
