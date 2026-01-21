@@ -2,6 +2,7 @@ package com.example.myapplication.screens
 
 import android.content.Intent
 import android.net.Uri
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -11,6 +12,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.LocationOn
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -18,9 +20,12 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.core.content.FileProvider
 import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
 import com.example.myapplication.model.Place
+import java.io.File
+import java.io.FileOutputStream
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -61,6 +66,85 @@ fun DetailsScreen(navController: NavController, viewModel: PlaceViewModel, place
                 }) {
                     Icon(Icons.Default.Edit, contentDescription = "Edytuj")
                 }
+
+                // przycisk udostępniania
+                IconButton(onClick = {
+                    val shareText = """
+                        Zobacz to miejsce: ${currentPlace.title}
+                        Opis: ${currentPlace.description}
+                        📍 Lokalizacja: http://googleusercontent.com/maps.google.com/?q=${currentPlace.lat},${currentPlace.lng}
+                    """.trimIndent()
+
+                    fun shareTextOnly() {
+                        val textIntent = Intent(Intent.ACTION_SEND).apply {
+                            type = "text/plain"
+                            putExtra(Intent.EXTRA_TEXT, shareText)
+                        }
+                        context.startActivity(Intent.createChooser(textIntent, "Udostępnij tekst"))
+                    }
+
+                    try {
+                        val contentResolver = context.contentResolver
+                        // parsowanie Uri z bazy danych
+                        val originalUri = Uri.parse(currentPlace.imageUri)
+
+                        // otworzenie strumienia pliku
+                        val inputStream = contentResolver.openInputStream(originalUri)
+
+                        if (inputStream != null) {
+                            // tworzenie pliku tymczasowego w cache
+                            val cacheDir = File(context.cacheDir, "images")
+                            cacheDir.mkdirs()
+
+                            // plik o stałej nazwie
+                            val tempFile = File(cacheDir, "share_image.jpg")
+
+                            // kopiowanie danych do pliku tymczasowego
+                            FileOutputStream(tempFile).use { output ->
+                                inputStream.copyTo(output)
+                            }
+                            inputStream.close()
+
+                            // generowanie uri dla pliku tymczasowego
+                            val authority = "${context.packageName}.fileprovider"
+                            val fileUri = FileProvider.getUriForFile(context, authority, tempFile)
+
+                            // budowanie intentu
+                            val shareIntent = Intent(Intent.ACTION_SEND).apply {
+                                type = "image/jpeg"
+                                putExtra(Intent.EXTRA_TEXT, shareText)
+                                putExtra(Intent.EXTRA_STREAM, fileUri)
+
+                                // uprawnienia odczytu dla innych aplikacji
+                                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+
+                                // przypięcie uprawnień do intentu
+                                clipData = android.content.ClipData.newRawUri(null, fileUri)
+                            }
+
+                            val chooser = Intent.createChooser(shareIntent, "Udostępnij wpis")
+
+                            // przekazanie uprawnień dla choosera
+                            chooser.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+
+                            context.startActivity(chooser)
+
+                        } else {
+                            // wysłanie samego tekstu jeśli nie udało się otworzyć pliku
+                            Toast.makeText(context, "Zdjęcie nie zostało znalezione, wysyłam tekst.", Toast.LENGTH_SHORT).show()
+                            shareTextOnly()
+                        }
+
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                        // w razie błędu
+                        shareTextOnly()
+                    }
+
+                }) {
+                    Icon(Icons.Default.Share, contentDescription = "Udostępnij")
+                }
+
                 // zdjęcie
                 Card(
                     modifier = Modifier.fillMaxWidth().height(250.dp),
@@ -91,12 +175,8 @@ fun DetailsScreen(navController: NavController, viewModel: PlaceViewModel, place
                 // przycisk kierujący do map google'a
                 Button(
                     onClick = {
-                        // tworzenie uri (geo:lat,lng) z etykietą
-                        val uri = Uri.parse("geo:${currentPlace.lat},${currentPlace.lng}?q=${currentPlace.lat},${currentPlace.lng}(${currentPlace.title})")
+                        val uri = Uri.parse("geo:${currentPlace.lat},${currentPlace.lng}?q=${currentPlace.lat},${currentPlace.lng}(${Uri.encode(currentPlace.title)})")
                         val mapIntent = Intent(Intent.ACTION_VIEW, uri)
-                        mapIntent.setPackage("com.google.android.apps.maps")
-
-                        // otwieranie mapy
                         try {
                             context.startActivity(mapIntent)
                         } catch (e: Exception) {
