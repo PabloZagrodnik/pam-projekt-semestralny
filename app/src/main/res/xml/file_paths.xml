@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- określenie gdzie zapisywane są zdjęcia-->
 <paths>
+    <files-path name="images" path="." />
+    <cache-path name="cache" path="." />
     <external-files-path name="my_images" path="Pictures" />
 </paths>

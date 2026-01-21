@@ -54,7 +54,7 @@ fun AddPlaceScreen(navController: NavController, viewModel: PlaceViewModel) {
     // funcja wywołująca aparat
     fun takePhoto() {
         val file = createImageFile()
-        val uri = FileProvider.getUriForFile(context, "${context.packageName}.provider",file)
+        val uri = FileProvider.getUriForFile(context, "${context.packageName}.fileprovider",file)
         tempUri = uri
         cameraLauncher.launch(uri)
     }

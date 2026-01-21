@@ -63,7 +63,7 @@ fun EditPlaceScreen(navController: NavController, viewModel: PlaceViewModel, pla
 
     fun takePhoto() {
         val file = createImageFile()
-        val uri = FileProvider.getUriForFile(context, "${context.packageName}.provider", file)
+        val uri = FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", file)
         tempUri = uri
         cameraLauncher.launch(uri)
     }
