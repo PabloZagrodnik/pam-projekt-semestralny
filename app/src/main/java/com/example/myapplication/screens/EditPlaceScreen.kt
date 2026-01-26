@@ -10,6 +10,8 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -25,6 +27,7 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EditPlaceScreen(navController: NavController, viewModel: PlaceViewModel, placeId: String?) {
     val context = LocalContext.current
@@ -72,64 +75,78 @@ fun EditPlaceScreen(navController: NavController, viewModel: PlaceViewModel, pla
         if (isGranted) takePhoto() else Toast.makeText(context, "Brak zgody na aparat", Toast.LENGTH_SHORT).show()
     }
 
-    // interfejs użytkownika
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp)
-            .verticalScroll(rememberScrollState()),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(12.dp)
-    ) {
-        Text("Edytuj Miejsce", style = MaterialTheme.typography.headlineMedium)
-
-        OutlinedTextField(
-            value = title,
-            onValueChange = { title = it },
-            label = { Text("Nazwa miejsca") },
-            modifier = Modifier.fillMaxWidth()
-        )
-
-        OutlinedTextField(
-            value = description,
-            onValueChange = { description = it },
-            label = { Text("Opis") },
-            modifier = Modifier.fillMaxWidth(),
-            minLines = 3
-        )
-
-        Button(onClick = { permissionLauncher.launch(Manifest.permission.CAMERA) }) {
-            Text("Zmień Zdjęcie")
-        }
-
-        imageUri?.let {
-            Image(
-                painter = rememberAsyncImagePainter(it),
-                contentDescription = null,
-                modifier = Modifier.size(200.dp)
-            )
-        }
-
-        Spacer(modifier = Modifier.height(24.dp))
-
-        // Przycisk zapisu
-        Button(
-            onClick = {
-                if (title.isNotEmpty() && existingPlace != null) {
-                    // tworzenie obiektu Place z zachowaniem starego id i lokalizacji
-                    val updatedPlace = existingPlace!!.copy(
-                        title = title,
-                        description = description,
-                        imageUri = imageUri.toString()
-                    )
-
-                    viewModel.updatePlace(updatedPlace)
-                    navController.popBackStack() // powrót
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("Edytuj Miejsce") },
+                navigationIcon = {
+                    IconButton(onClick = { navController.popBackStack() }) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Wróć"
+                        )
+                    }
                 }
-            },
-            modifier = Modifier.fillMaxWidth()
+            )
+        },
+        containerColor = MaterialTheme.colorScheme.background
+    ) { innerPadding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+                .verticalScroll(rememberScrollState()),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            Text("Zapisz Zmiany")
+            OutlinedTextField(
+                value = title,
+                onValueChange = { title = it },
+                label = { Text("Nazwa miejsca") },
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            OutlinedTextField(
+                value = description,
+                onValueChange = { description = it },
+                label = { Text("Opis") },
+                modifier = Modifier.fillMaxWidth(),
+                minLines = 3
+            )
+
+            Button(onClick = { permissionLauncher.launch(Manifest.permission.CAMERA) }) {
+                Text("Zmień Zdjęcie")
+            }
+
+            imageUri?.let {
+                Image(
+                    painter = rememberAsyncImagePainter(it),
+                    contentDescription = null,
+                    modifier = Modifier.size(200.dp)
+                )
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // Przycisk zapisu
+            Button(
+                onClick = {
+                    if (title.isNotEmpty() && existingPlace != null) {
+                        // tworzenie obiektu Place z zachowaniem starego id i lokalizacji
+                        val updatedPlace = existingPlace!!.copy(
+                            title = title,
+                            description = description,
+                            imageUri = imageUri.toString()
+                        )
+
+                        viewModel.updatePlace(updatedPlace)
+                        navController.popBackStack() // powrót
+                    }
+                },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Zapisz Zmiany")
+            }
         }
     }
 }

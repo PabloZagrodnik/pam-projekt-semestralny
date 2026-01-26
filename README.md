@@ -5,15 +5,17 @@ do zapisywania miejsc wraz ze zdjęciem i lokalizacją GPS, możliwość przekie
 [Instrukcja do projektu](docs/Projekt_mobilny.pdf)
 
 
-## Zrzuty Ekranu
+## Zrzuty Ekranu (Dark Theme)
 <p align="center">
   <img src="docs/screenshots/swipe-delete.png" width="250" alt="Lista z usuwaniem elementów przez przesunięcie">
   <img src="docs/screenshots/sort-options.png" width="250" alt="Opcje sortowania">
+  <img src="docs/screenshots/add-screen.png" width="250" alt="Ekran dodawania">
 </p>
 
 <p align="center">
   <img src="docs/screenshots/details-screen.png" width="250" alt="Szczegóły">
   <img src="docs/screenshots/share.png" width="250" alt="Udostępnianie miejsca">
+  <img src="docs/screenshots/edit-screen.png" width="250" alt="Ekran edycji">
 </p>
 
 ## Status projektu
