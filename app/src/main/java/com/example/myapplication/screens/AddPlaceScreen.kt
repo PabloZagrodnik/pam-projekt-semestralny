@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -33,6 +34,7 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddPlaceScreen(navController: NavController, viewModel: PlaceViewModel) {
     val context = LocalContext.current
@@ -167,88 +169,107 @@ fun AddPlaceScreen(navController: NavController, viewModel: PlaceViewModel) {
             Toast.makeText(context, "Brak uprawnień GPS", Toast.LENGTH_SHORT).show()
         }
     }
-
-    // ui ekranu
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp)
-            .verticalScroll(rememberScrollState()), // przewijanie ekranu
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(12.dp)
-    ) {
-        Text("Nowe Miejsce", style = MaterialTheme.typography.headlineMedium)
-
-        OutlinedTextField(
-            value = title,
-            onValueChange = { title = it },
-            label = { Text("Nazwa miejsca") },
-            modifier = Modifier.fillMaxWidth()
-        )
-
-        OutlinedTextField(
-            value = description,
-            onValueChange = { description = it },
-            label = { Text("Opis") },
-            modifier = Modifier.fillMaxWidth(),
-            minLines = 3
-        )
-
-        // adres - wypełniane automatyczne ale można edytować
-        OutlinedTextField(
-            value = address,
-            onValueChange = { address = it },
-            label = { Text("Adres (z GPS)") },
-            modifier = Modifier.fillMaxWidth(),
-            trailingIcon = { Icon(Icons.Default.LocationOn, contentDescription = null) },
-            placeholder = { Text("Pobierz lokalizację aby wypełnić") }
-        )
-
-        Button(onClick = { permissionLauncher.launch(Manifest.permission.CAMERA) }) {
-            Text("Zrób Zdjęcie")
-        }
-
-        imageUri?.let {
-            Image(
-                painter = rememberAsyncImagePainter(it),
-                contentDescription = null,
-                modifier = Modifier.size(200.dp)
-            )
-        }
-
-        // GPS
-        Button(onClick = {
-            locationPermissionLauncher.launch(arrayOf(
-                Manifest.permission.ACCESS_FINE_LOCATION,
-                Manifest.permission.ACCESS_COARSE_LOCATION
-            ))
-        }) {
-            Text(if (location == null) "Pobierz Lokalizację" else "GPS OK: ${location!!.latitude}, ${location!!.longitude}")
-        }
-
-        Spacer(modifier = Modifier.height(24.dp))
-
-        // button zapisz
-        Button(
-            onClick = {
-                if (title.isNotEmpty() && imageUri != null && location != null) {
-                    viewModel.addPlace(
-                        title,
-                        description,
-                        address, // przekazywanie adresu
-                        imageUri.toString(),
-                        location!!.latitude,
-                        location!!.longitude
-                    )
-                    navController.popBackStack()
-                } else {
-                    Toast.makeText(context, "Uzupełnij nazwę, zdjęcie i GPS!", Toast.LENGTH_SHORT).show()
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("Nowe Miejsce") },
+                navigationIcon = {
+                    IconButton(onClick = { navController.popBackStack() }) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Wróć"
+                        )
+                    }
                 }
-            },
-            modifier = Modifier.fillMaxWidth(),
-            enabled = title.isNotEmpty()
+            )
+        },
+        containerColor = MaterialTheme.colorScheme.background
+    ) { innerPadding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+                .verticalScroll(rememberScrollState()),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            Text("ZAPISZ")
+            OutlinedTextField(
+                value = title,
+                onValueChange = { title = it },
+                label = { Text("Nazwa miejsca") },
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            OutlinedTextField(
+                value = description,
+                onValueChange = { description = it },
+                label = { Text("Opis") },
+                modifier = Modifier.fillMaxWidth(),
+                minLines = 3
+            )
+
+            // adres - wypełniane automatyczne ale można edytować
+            OutlinedTextField(
+                value = address,
+                onValueChange = { address = it },
+                label = { Text("Adres (z GPS)") },
+                modifier = Modifier.fillMaxWidth(),
+                trailingIcon = { Icon(Icons.Default.LocationOn, contentDescription = null) },
+                placeholder = { Text("Pobierz lokalizację aby wypełnić") }
+            )
+
+            Button(onClick = { permissionLauncher.launch(Manifest.permission.CAMERA) }) {
+                Text("Zrób Zdjęcie")
+            }
+
+            imageUri?.let {
+                Image(
+                    painter = rememberAsyncImagePainter(it),
+                    contentDescription = null,
+                    modifier = Modifier.size(200.dp)
+                )
+            }
+
+            // GPS
+            Button(onClick = {
+                locationPermissionLauncher.launch(
+                    arrayOf(
+                        Manifest.permission.ACCESS_FINE_LOCATION,
+                        Manifest.permission.ACCESS_COARSE_LOCATION
+                    )
+                )
+            }) {
+                Text(if (location == null) "Pobierz Lokalizację" else "GPS OK: ${location!!.latitude}, ${location!!.longitude}")
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // button zapisz
+            Button(
+                onClick = {
+                    if (title.isNotEmpty() && imageUri != null && location != null) {
+                        viewModel.addPlace(
+                            title,
+                            description,
+                            address, // przekazywanie adresu
+                            imageUri.toString(),
+                            location!!.latitude,
+                            location!!.longitude
+                        )
+                        navController.popBackStack()
+                    } else {
+                        Toast.makeText(
+                            context,
+                            "Uzupełnij nazwę, zdjęcie i GPS!",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                },
+                modifier = Modifier.fillMaxWidth(),
+                enabled = title.isNotEmpty()
+            ) {
+                Text("ZAPISZ")
+            }
         }
     }
 }

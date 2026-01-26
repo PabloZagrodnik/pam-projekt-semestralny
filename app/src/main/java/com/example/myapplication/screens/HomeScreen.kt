@@ -40,7 +40,9 @@ fun HomeScreen(navController: NavController, viewModel: PlaceViewModel) {
             // search bar
             Column(
                 modifier = Modifier
+                    .fillMaxWidth()
                     .background(MaterialTheme.colorScheme.primaryContainer)
+                    .statusBarsPadding()
                     .padding(16.dp)
             ) {
                 // wiersz zawierający pole wyszukiwania i przycisk sortowania

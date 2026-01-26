@@ -5,7 +5,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.runtime.Composable
 import com.example.myapplication.navigation.PlaceNavigation
-import com.example.myapplication.ui.theme.ProjTheme
+import com.example.myapplication.ui.theme.MyApplicationTheme
 
 
 class MainActivity : ComponentActivity() {
@@ -20,7 +20,7 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun MyApp() {
-    ProjTheme {
+    MyApplicationTheme() {
         PlaceNavigation()
     }
 }
