@@ -32,10 +32,6 @@ Projekt został zainicjowany w oparciu o kod z Laboratorium 11 (struktura MVVM, 
 * **Eksport danych** - Możliwość udostępniania miejsc do innych aplikacji `(Wiadomości, Poczta, Notatki)`.
 
 
-## TODO
-### Lista planowanych funkcji:
-* **Ewentualna poprawa UI**
-
 ## Tech Stack
 * **Język** - Kotlin
 * **Interfejs:** Jetpack Compose `(Material Design 3)`
